@@ -1,50 +1,46 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderResource;
 use Illuminate\Http\Request;
-use App\Models\Order;
-use App\Models\Product;
+use App\Services\OrderService;
+use Illuminate\Http\Response;
 
 class OrderController extends Controller
 {
+    protected OrderService $orderService;
+
+    public function __construct(OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
+
     public function index(Request $request)
     {
-        return $request->user()->orders()->with('items.product')->get();
+        $orders = $this->orderService->listOrders($request->user());
+
+        return (new OrderResource($orders))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ]);
+        $order = $this->orderService->createOrder($request->user(), $request);
 
-        $order = $request->user()->orders()->create([
-            'total' => 0,
-        ]);
+        return (new OrderResource($order))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
+    }
 
-        $total = 0;
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            if ($product->quantity >= $item['quantity']) {
-                $order->items()->create([
-                    'product_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $product->price,
-                ]);
+    public function show(Request $request)
+    {
+        $orders = $this->orderService->listOrders($request->user());
 
-                $product->quantity -= $item['quantity'];
-                $product->update();
-
-                $total += $product->price * $item['quantity'];
-            }
-
-        }
-
-        $order->update(['total' => $total]);
-
-        return response()->json($order->load('items.product'), 201);
+        return (new OrderResource($orders))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 }

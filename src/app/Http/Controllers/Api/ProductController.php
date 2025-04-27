@@ -1,63 +1,68 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Http\Resources\ProductResource;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+use App\Services\ProductService;
+use App\Models\Product;
+use App\Http\Requests\StoreProductRequest;
+use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    protected ProductService $productService;
+
+    public function __construct(ProductService $productService)
     {
-        $query = Product::with(['categories']);
-
-        // Filter by category
-        if ($request->has('category')) {
-            $query->whereHas('categories', function($q) use ($request) {
-                $q->where('categories.name', 'like', '%'.$request->category.'%');
-            });
-        }
-        $cacheKey = 'products.page.' . $request->input('page', 1) . '.' . md5($request->fullUrl());
-
-        return Cache::remember($cacheKey, now()->addMinutes(5), function() use ($request, $query) {
-            $products = $query->paginate($request->input('per_page', 10));
-
-            return ProductResource::collection($products);
-        });
+        $this->productService = $productService;
     }
 
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required', 'price' => 'required|numeric'
-        ]);
-        $product = Product::create($validated);
-        return response()->json($product, 201);
+        return $this->productService->listProducts($request);
+    }
+
+    public function store(StoreProductRequest $request)
+    {
+        try {
+            $product = $this->productService->createProduct($request->validated());
+
+            return ( new ProductResource($product))
+                ->response()
+                ->setStatusCode(Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return (new ProductResource(['message' => $e->getMessage(), 'code' => $e->getCode()]))
+                ->response()
+                ->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
     }
 
     public function show(int $id)
     {
-        $product = Product::with(['categories', 'images', 'productOrders'])->findOrFail($id);
-        return new ProductResource($product);
+        return $this->productService->getProduct($id);
     }
 
-    public function update(Request $request)
+    public function update(StoreProductRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required', 'price' => 'required|numeric'
-        ]);
-        $product = Product::update($validated);
+        try {
+            $product = $request->validated();
+            $product = $this->productService->updateProduct($product, $request);
 
-        return response()->json($product, 201);
+            return ( new ProductResource($product))
+                ->response()
+                ->setStatusCode(Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return (new ProductResource(['message' => $e->getMessage(), 'code' => $e->getCode()]))
+            ->response()
+            ->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
     }
 
     public function destroy(Product $product)
     {
-        $product->delete();
-
-        return response()->json(['message' => 'deleted'], 201);
+        $this->productService->deleteProduct($product);
+        return response()->json(['message' => 'deleted'], 200);
     }
-
 }

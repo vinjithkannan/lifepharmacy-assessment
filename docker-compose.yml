@@ -10,7 +10,7 @@ services:
     depends_on:
       - lifepharmacy-php
     networks:
-      - lifepharmacy-nginx-network
+      - lifepharmacy-network
 
   lifepharmacy-php:
     build:
@@ -20,7 +20,7 @@ services:
       - ./src:/var/www/html
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - lifepharmacy-nginx-network
+      - lifepharmacy-network
 
   lifepharmacy-mysql:
     image: mysql:8.0
@@ -45,7 +45,7 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - lifepharmacy-nginx-network
+      - lifepharmacy-network
 
   lifepharmacy-redis:
     image: redis:alpine
@@ -54,9 +54,9 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redisdata:/data
     networks:
-      - lifepharmacy-nginx-network
+      - lifepharmacy-network
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -64,7 +64,8 @@ services:
       retries: 5
 
 networks:
-  lifepharmacy-nginx-network:
-
+  lifepharmacy-network:
+    driver: bridge
 volumes:
-  redis_data:
+  redisdata:
+    driver: local

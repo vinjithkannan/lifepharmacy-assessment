@@ -48,7 +48,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function userOrders()
+    public function orders()
     {
         return $this->hasMany(Order::class)->orderBy('user_id', 'ASC');
     }

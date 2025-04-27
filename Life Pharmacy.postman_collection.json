@@ -63,7 +63,10 @@
 				}
 			],
 			"protocolProfileBehavior": {
-				"disableBodyPruning": true
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"accept": true
+				}
 			},
 			"request": {
 				"auth": {
@@ -77,7 +80,13 @@
 					]
 				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "",
@@ -88,7 +97,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{host}}/api/products?page=1&category=Beauty Care",
+					"raw": "{{host}}/api/products?page=1",
 					"host": [
 						"{{host}}"
 					],
@@ -108,7 +117,8 @@
 						},
 						{
 							"key": "category",
-							"value": "Beauty Care"
+							"value": "Beauty Care",
+							"disabled": true
 						}
 					]
 				}
@@ -116,9 +126,73 @@
 			"response": []
 		},
 		{
-			"name": "Get Product",
+			"name": "Get Orders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var template = `\r",
+							"<style type=\"text/css\">\r",
+							"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+							"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+							"    .tftable tr {background-color:#ffffff;}\r",
+							"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+							"    .tftable tr:hover {background-color:#e0ffff;}\r",
+							"</style>\r",
+							"\r",
+							"<table class=\"tftable\" border=\"1\">\r",
+							"    <tr>\r",
+							"        <th>ID</th>\r",
+							"        <th>Name</th>\r",
+							"        <th>Description</th>\r",
+							"        <th>Price</th>\r",
+							"        <th>Quantity</th>\r",
+							"        <th>Categories</th>\r",
+							"    </tr>\r",
+							"    \r",
+							"    {{#each response.data}}\r",
+							"        <tr>\r",
+							"            <td>{{id}}</td>\r",
+							"            <td>{{name}}</td>\r",
+							"            <td>{{description}}</td>\r",
+							"            <td>{{price}}</td>\r",
+							"            <td>{{quantity}}</td>\r",
+							"            <td>\r",
+							"                <ul>\r",
+							"                    {{#each categories}}\r",
+							"                        <li>{{name}}</li>\r",
+							"                    {{/each}}\r",
+							"                </ul>\r",
+							"            </td>\r",
+							"        </tr>\r",
+							"    {{/each}}\r",
+							"</table>\r",
+							"`;\r",
+							"\r",
+							"function constructVisualizerPayload() {\r",
+							"    return {response: pm.response.json()};\r",
+							"}\r",
+							"\r",
+							"pm.visualizer.set(template, constructVisualizerPayload());"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
 			"protocolProfileBehavior": {
-				"disableBodyPruning": true
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"accept": true
+				}
 			},
 			"request": {
 				"auth": {
@@ -132,7 +206,13 @@
 					]
 				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "",
@@ -143,15 +223,75 @@
 					}
 				},
 				"url": {
-					"raw": "{{host}}/api/product/1/edit",
+					"raw": "{{host}}/api/orders",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"orders"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "10",
+							"disabled": true
+						},
+						{
+							"key": "category",
+							"value": "Beauty Care",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{api_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/product/1",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"product",
-						"1",
-						"edit"
+						"1"
 					]
 				}
 			},
@@ -159,6 +299,11 @@
 		},
 		{
 			"name": "Create Products",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -171,7 +316,22 @@
 					]
 				},
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Product 2\",\r\n    \"price\": 200.50,\r\n    \"quantity\": 2000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{host}}/api/products",
 					"host": [
@@ -180,6 +340,13 @@
 					"path": [
 						"api",
 						"products"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
 					]
 				}
 			},
@@ -187,6 +354,11 @@
 		},
 		{
 			"name": "Update Product",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -199,15 +371,30 @@
 					]
 				},
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"name\": \"odio\",\r\n        \"slug\": \"odiosd\",\r\n        \"description\": \"Fugit iste excepturi voluptas quo. Sit accusamus est voluptatem qui assumenda repellendus. Molestiae beatae at sapiente nostrum. Ut excepturi culpa ut ut.\",\r\n        \"price\": \"756.57\",\r\n        \"quantity\": 276,\r\n        \"categories\": [\r\n            5\r\n        ]\r\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "{{host}}/api/products/1",
+					"raw": "{{host}}/api/product/1",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
-						"products",
+						"product",
 						"1"
 					]
 				}
@@ -216,6 +403,11 @@
 		},
 		{
 			"name": "Delete Product",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -228,7 +420,13 @@
 					]
 				},
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Acc",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{host}}/api/products/1",
 					"host": [
@@ -258,12 +456,23 @@
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Customer 2\",\r\n    \"email\": \"customer2@lifepharmacy.com\",\r\n    \"password\": \"custmer2\"\r\n}",
+					"raw": "{\r\n    \"name\": \"Customer 3\",\r\n    \"email\": \"customer3@lifepharmacy.com\",\r\n    \"password\": \"custmer3\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -299,9 +508,20 @@
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"email\": \"ecomadmin@lifepharmacy.com\",\r\n    \"password\": \"ecomadmin\"\r\n}",
